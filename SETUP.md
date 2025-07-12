@@ -75,11 +75,26 @@ python scripts/manage.py send-test 1
 ```
 
 ### 8. Run the Application
+
+**Option 1: Command Line Interface**
 ```bash
 python src/main.py
 ```
 
-The application will now run continuously, sending random images at unpredictable intervals between 24-90 hours.
+**Option 2: Web Interface (Recommended)**
+```bash
+python src/web_app.py
+```
+
+Then open your browser and navigate to: http://127.0.0.1:5000
+
+Default admin credentials:
+- Username: admin
+- Password: rickyAdmin123!
+
+**Important:** Change the admin password immediately after first login!
+
+The application will run continuously, sending random images at unpredictable intervals between 24-90 hours.
 
 ## Management Commands
 

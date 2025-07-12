@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Ricky{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <h1 class="mb-4"><i class="bi bi-person"></i> My Profile</h1>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Account Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Username:</dt>
+                    <dd class="col-sm-8">{{ current_user.username }}</dd>
+                    
+                    <dt class="col-sm-4">Role:</dt>
+                    <dd class="col-sm-8">
+                        {% if current_user.is_admin %}
+                            <span class="badge bg-danger">Administrator</span>
+                        {% else %}
+                            <span class="badge bg-primary">User</span>
+                        {% endif %}
+                    </dd>
+                    
+                    <dt class="col-sm-4">Account Created:</dt>
+                    <dd class="col-sm-8">{{ current_user.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+                    
+                    <dt class="col-sm-4">Last Login:</dt>
+                    <dd class="col-sm-8">
+                        {% if current_user.last_login %}
+                            {{ current_user.last_login.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            This is your first login
+                        {% endif %}
+                    </dd>
+                    
+                    <dt class="col-sm-4">Login Count:</dt>
+                    <dd class="col-sm-8">{{ current_user.login_count }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <h2 class="mb-4"><i class="bi bi-key"></i> Change Password</h2>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('profile') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.current_password.label(class="form-label") }}
+                        {{ form.current_password(class="form-control" + (" is-invalid" if form.current_password.errors else "")) }}
+                        {% if form.current_password.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.current_password.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.new_password.label(class="form-label") }}
+                        {{ form.new_password(class="form-control" + (" is-invalid" if form.new_password.errors else "")) }}
+                        {% if form.new_password.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.new_password.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Password must be at least 8 characters long
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.confirm_password.label(class="form-label") }}
+                        {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else "")) }}
+                        {% if form.confirm_password.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.confirm_password.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <i class="bi bi-shield-check"></i> <strong>Security Tips:</strong>
+            <ul class="mb-0">
+                <li>Use a strong, unique password</li>
+                <li>Don't share your password with anyone</li>
+                <li>Change your password regularly</li>
+                <li>Your password is encrypted and cannot be recovered</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %} 

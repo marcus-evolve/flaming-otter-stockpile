@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Test Message - Ricky{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="mb-4"><i class="bi bi-send"></i> Send Test Message</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted">Send a test message immediately to verify everything is working correctly.</p>
+                
+                <form method="POST" action="{{ url_for('test_message') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.image_id.label(class="form-label") }}
+                        {{ form.image_id(class="form-select" + (" is-invalid" if form.image_id.errors else ""), onchange="updatePreview()") }}
+                        {% if form.image_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.image_id.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Preview Container -->
+                    <div id="preview-container" class="mb-3" style="display: none;">
+                        <label class="form-label">Selected Image Preview</label>
+                        <div class="card">
+                            <img id="preview-image" src="" alt="Preview" class="card-img-top" style="max-height: 300px; object-fit: contain;">
+                            <div class="card-body">
+                                <p id="preview-description" class="card-text"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> This will send a message to: <strong>{{ config.RECIPIENT_PHONE_NUMBER }}</strong>
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Testing Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Test messages are sent immediately, bypassing the scheduler</li>
+                    <li>The selected image will be marked as sent after testing</li>
+                    <li>Check Twilio logs if the message doesn't arrive</li>
+                    <li>Ensure your Twilio account has sufficient balance</li>
+                    <li>Verify the recipient number can receive MMS messages</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image data for preview -->
+<script>
+const imageData = {
+    {% for choice in form.image_id.choices %}
+    {{ choice[0] }}: {
+        description: "{{ choice[1]|e }}",
+        url: "{{ url_for('image_thumbnail', image_id=choice[0]) }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+function updatePreview() {
+    const select = document.getElementById('image_id');
+    const container = document.getElementById('preview-container');
+    const imageElement = document.getElementById('preview-image');
+    const descriptionElement = document.getElementById('preview-description');
+    
+    const selectedId = select.value;
+    
+    if (selectedId && imageData[selectedId]) {
+        const data = imageData[selectedId];
+        imageElement.src = data.url;
+        descriptionElement.textContent = data.description;
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+// Update preview on page load if an option is selected
+document.addEventListener('DOMContentLoaded', updatePreview);
+</script>
+{% endblock %} 

@@ -12,7 +12,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from src.utils.config import config
 from src.utils.logger import logger
-from src.models import init_db, Base, get_db_session, Image
+from src.models import init_db, Base, get_db_session, Image, User
 
 
 class DatabaseSetup:
@@ -25,6 +25,7 @@ class DatabaseSetup:
             ("Creating tables", self._create_tables),
             ("Verifying database structure", self._verify_structure),
             ("Setting up indexes", self._setup_indexes),
+            ("Creating default admin user", self._create_admin_user),
         ]
         self.total_steps = len(self.steps)
     
@@ -85,6 +86,34 @@ class DatabaseSetup:
             logger.info(f"Found {len(indexes)} indexes on images table")
             for idx in indexes:
                 logger.info(f"  - {idx['name']}: {idx['column_names']}")
+        
+        return True
+    
+    def _create_admin_user(self):
+        """Create default admin user if it doesn't exist."""
+        with get_db_session() as session:
+            # Check if any users exist
+            user_count = session.query(User).count()
+            
+            if user_count == 0:
+                # Create default admin user
+                admin_user = User(
+                    username='admin',
+                    is_admin=True,
+                    is_active=True
+                )
+                admin_user.set_password('rickyAdmin123!')
+                
+                session.add(admin_user)
+                session.commit()
+                
+                logger.info("Created default admin user")
+                print("\n  IMPORTANT: Default admin credentials created:")
+                print("  Username: admin")
+                print("  Password: rickyAdmin123!")
+                print("  Please change this password immediately!\n")
+            else:
+                logger.info(f"Found {user_count} existing users, skipping admin creation")
         
         return True
     

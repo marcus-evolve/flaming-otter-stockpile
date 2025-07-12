@@ -1,0 +1,186 @@
+/* Ricky Custom Styles */
+
+/* General Layout */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Navbar Customization */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Cards */
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
+
+/* Status Badges */
+.badge {
+    padding: 0.35em 0.65em;
+}
+
+/* Image Thumbnails */
+.img-thumbnail {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.img-thumbnail:hover {
+    transform: scale(1.05);
+}
+
+/* Forms */
+.form-control:focus,
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.25);
+}
+
+/* Buttons */
+.btn {
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Dashboard Cards */
+.card.text-white h2 {
+    font-size: 2.5rem;
+    font-weight: 300;
+}
+
+.card.text-white h5 {
+    font-size: 1rem;
+    font-weight: 400;
+    opacity: 0.9;
+}
+
+/* Table Improvements */
+.table > :not(caption) > * > * {
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+/* Pagination */
+.pagination {
+    margin-bottom: 0;
+}
+
+/* Footer */
+.footer {
+    background-color: #f8f9fa;
+    margin-top: auto;
+}
+
+/* Login Page */
+.login-card {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Alerts */
+.alert {
+    border: none;
+    border-radius: 0.375rem;
+}
+
+/* Loading Animation */
+.spinner-border {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+}
+
+/* Mobile Responsive */
+@media (max-width: 576px) {
+    .table {
+        font-size: 0.875rem;
+    }
+    
+    .btn-group-sm > .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Dark Mode Support (if needed) */
+@media (prefers-color-scheme: dark) {
+    /* Add dark mode styles here if desired */
+}
+
+/* Custom Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Image Preview Modal */
+.modal-body img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Status Indicators */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-indicator.active {
+    background-color: #198754;
+}
+
+.status-indicator.inactive {
+    background-color: #6c757d;
+}
+
+/* File Upload */
+.form-control[type="file"] {
+    padding: 0.375rem 0.75rem;
+}
+
+/* Progress Bar */
+.progress {
+    height: 1.5rem;
+}
+
+.progress-bar {
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+} 

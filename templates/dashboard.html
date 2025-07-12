@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Ricky{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+
+<!-- Status Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-images"></i> Total Images
+                </h5>
+                <h2 class="mb-0">{{ total_images }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-check-circle"></i> Active Images
+                </h5>
+                <h2 class="mb-0">{{ active_images }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-send-check"></i> Sent Images
+                </h5>
+                <h2 class="mb-0">{{ sent_images }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white {{ 'bg-success' if scheduler_running else 'bg-danger' }}">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-clock"></i> Scheduler
+                </h5>
+                <h2 class="mb-0">{{ 'Running' if scheduler_running else 'Stopped' }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scheduler Status -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Scheduler Status</h5>
+            </div>
+            <div class="card-body">
+                {% if scheduler_running %}
+                    <p class="text-success"><i class="bi bi-check-circle"></i> Scheduler is running</p>
+                    {% if next_send_time %}
+                        <p><strong>Next message scheduled for:</strong></p>
+                        <p class="text-primary h4" id="next-send-time" data-time="{{ next_send_time }}">
+                            {{ next_send_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                        </p>
+                        <p class="text-muted">Time until next send: <span id="countdown">Calculating...</span></p>
+                    {% else %}
+                        <p class="text-warning">No message scheduled yet</p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-danger"><i class="bi bi-x-circle"></i> Scheduler is not running</p>
+                    <a href="{{ url_for('scheduler') }}" class="btn btn-primary">
+                        <i class="bi bi-play"></i> Start Scheduler
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-activity"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('add_image') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Add New Image
+                    </a>
+                    <a href="{{ url_for('test_message') }}" class="btn btn-info">
+                        <i class="bi bi-send"></i> Send Test Message
+                    </a>
+                    <a href="{{ url_for('images') }}" class="btn btn-secondary">
+                        <i class="bi bi-images"></i> Manage Images
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recently Sent Images</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_images %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Description</th>
+                                    <th>Sent At</th>
+                                    <th>Send Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for image in recent_images %}
+                                <tr>
+                                    <td>
+                                        <img src="{{ url_for('image_thumbnail', image_id=image.id) }}" 
+                                             alt="Thumbnail" class="img-thumbnail" style="max-width: 50px;">
+                                    </td>
+                                    <td>{{ image.description[:50] }}{% if image.description|length > 50 %}...{% endif %}</td>
+                                    <td>{{ image.last_sent.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td><span class="badge bg-secondary">{{ image.send_count }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No images have been sent yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update countdown timer
+function updateCountdown() {
+    const nextSendElement = document.getElementById('next-send-time');
+    const countdownElement = document.getElementById('countdown');
+    
+    if (nextSendElement && countdownElement) {
+        const nextTime = new Date(nextSendElement.dataset.time);
+        const now = new Date();
+        const diff = nextTime - now;
+        
+        if (diff > 0) {
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            countdownElement.textContent = `${hours}h ${minutes}m ${seconds}s`;
+        } else {
+            countdownElement.textContent = 'Any moment now...';
+        }
+    }
+}
+
+// Update every second
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+// Auto-refresh stats every 30 seconds
+setInterval(() => {
+    fetch('/api/stats')
+        .then(response => response.json())
+        .then(data => {
+            // Update stats if needed
+            console.log('Stats updated:', data);
+        });
+}, 30000);
+</script>
+{% endblock %} 

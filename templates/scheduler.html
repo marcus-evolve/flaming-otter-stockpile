@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Scheduler - Ricky{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="bi bi-clock-history"></i> Scheduler Control</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Current Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        {% if scheduler_running %}
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 2rem;"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle-fill text-danger" style="font-size: 2rem;"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4 class="mb-0">Scheduler is {{ 'Running' if scheduler_running else 'Stopped' }}</h4>
+                        <p class="text-muted mb-0">
+                            {% if scheduler_running %}
+                                The scheduler is actively monitoring and will send messages at random intervals
+                            {% else %}
+                                No messages will be sent until the scheduler is started
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                {% if scheduler_running and next_send_time %}
+                <div class="alert alert-info">
+                    <h6 class="alert-heading">Next Message Scheduled</h6>
+                    <p class="mb-0">
+                        <strong>Time:</strong> {{ next_send_time.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                        <strong>Countdown:</strong> <span id="countdown">Calculating...</span>
+                    </p>
+                </div>
+                <script>
+                    const nextTime = new Date('{{ next_send_time.isoformat() }}');
+                    function updateCountdown() {
+                        const now = new Date();
+                        const diff = nextTime - now;
+                        if (diff > 0) {
+                            const hours = Math.floor(diff / (1000 * 60 * 60));
+                            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                            document.getElementById('countdown').textContent = `${hours}h ${minutes}m ${seconds}s`;
+                        } else {
+                            document.getElementById('countdown').textContent = 'Any moment now...';
+                        }
+                    }
+                    setInterval(updateCountdown, 1000);
+                    updateCountdown();
+                </script>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Scheduler Control</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('scheduler') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.action.label(class="form-label") }}
+                        {{ form.action(class="form-select") }}
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Configuration</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-6">Minimum Interval:</dt>
+                    <dd class="col-sm-6">{{ config.MIN_INTERVAL_HOURS }} hours</dd>
+                    
+                    <dt class="col-sm-6">Maximum Interval:</dt>
+                    <dd class="col-sm-6">{{ config.MAX_INTERVAL_HOURS }} hours</dd>
+                    
+                    <dt class="col-sm-6">Recipient Number:</dt>
+                    <dd class="col-sm-6">{{ config.RECIPIENT_PHONE_NUMBER[:3] }}...{{ config.RECIPIENT_PHONE_NUMBER[-4:] }}</dd>
+                    
+                    <dt class="col-sm-6">Environment:</dt>
+                    <dd class="col-sm-6">
+                        <span class="badge bg-{{ 'danger' if config.is_production() else 'info' }}">
+                            {{ config.ENVIRONMENT|upper }}
+                        </span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">How It Works</h5>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>The scheduler selects a truly random interval between {{ config.MIN_INTERVAL_HOURS }}-{{ config.MAX_INTERVAL_HOURS }} hours</li>
+                    <li>When the time comes, a random unsent image is selected</li>
+                    <li>The image and description are sent via SMS/MMS</li>
+                    <li>The image is marked as sent and the process repeats</li>
+                    <li>When all images are sent, the cycle starts over</li>
+                </ol>
+                
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="bi bi-info-circle"></i> <strong>Note:</strong> The scheduler uses cryptographically secure randomness to ensure messages are truly unpredictable with no patterns.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

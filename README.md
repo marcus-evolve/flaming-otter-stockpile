@@ -75,6 +75,9 @@ Ricky/
 3. **Configurable Intervals**: Set min/max time between messages
 4. **Error Handling**: Robust error handling with logging
 5. **Admin Scripts**: Easy image management via CLI
+6. **Web Interface**: Modern web UI for complete control without terminal
+7. **Authentication**: Secure login system with account lockout protection
+8. **Real-time Monitoring**: Live dashboard with statistics and countdown
 
 ### Security Considerations
 - Twilio credentials stored in environment variables
