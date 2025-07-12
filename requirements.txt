@@ -1,0 +1,33 @@
+# Core dependencies
+sqlalchemy==2.0.23
+alembic==1.13.0
+python-dotenv==1.0.0
+twilio==8.10.0
+apscheduler==3.10.4
+cryptography==41.0.7
+python-magic==0.4.27
+
+# Database drivers
+psycopg2-binary==2.9.9  # PostgreSQL
+# sqlite3 is included with Python standard library
+
+# Security
+argon2-cffi==23.1.0  # For password hashing if needed
+pyotp==2.9.0  # For TOTP if needed
+
+# Utilities
+click==8.1.7  # CLI interface
+python-dateutil==2.8.2
+pytz==2023.3
+requests==2.31.0
+pillow==10.1.0  # Image processing
+
+# Development
+pytest==7.4.3
+pytest-cov==4.1.0
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
+# Logging and monitoring
+python-json-logger==2.0.7 
