@@ -336,7 +336,6 @@ def create_app():
         return redirect(url_for('images'))
     
     @app.route('/images/<int:image_id>/thumbnail')
-    @csrf.exempt
     def image_thumbnail(image_id):
         """Serve image thumbnail."""
         with get_db_session() as session:
@@ -375,7 +374,7 @@ def create_app():
                 logger.error(f"Image file not found: {file_path}")
                 abort(404)
             
-            # Add headers to bypass ngrok restrictions
+            # Serve the image with appropriate headers
             response = send_from_directory(
                 config.IMAGES_DIR,
                 image.filename,

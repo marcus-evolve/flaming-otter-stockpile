@@ -149,8 +149,12 @@ class TwilioService:
         Returns:
             Public URL or None if failed
         """
-        # Get base URL from environment or use ngrok for local development
-        base_url = os.environ.get('BASE_URL', 'https://2119dbe613bd.ngrok-free.app')
+        # Get base URL from environment variable
+        base_url = os.environ.get('BASE_URL')
+        
+        if not base_url:
+            logger.error("BASE_URL environment variable is not set")
+            return None
         
         # Generate the full image URL
         image_url = f"{base_url}/images/{image_id}/{filename}"
