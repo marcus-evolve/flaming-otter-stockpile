@@ -5,7 +5,7 @@ python-dotenv==1.0.1
 twilio==9.2.2
 apscheduler==3.10.4
 cryptography==41.0.7
-filetype==1.15.0
+filetype
 
 # Database drivers
 psycopg2-binary==2.9.9  # PostgreSQL
