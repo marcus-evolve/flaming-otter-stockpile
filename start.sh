@@ -6,22 +6,34 @@ echo "Starting Ricky application..."
 # Set working directory to app root
 cd /app
 
-# Ensure data directories exist
+# Ensure data directories exist (for local file storage)
 mkdir -p data/images data/logs
 
 # Set Python path to include the app directory
 export PYTHONPATH="/app:$PYTHONPATH"
 
-# Initialize database with default admin user
-echo "Initializing database and creating admin user..."
-python src/scripts/init_railway_db.py
-
-if [ $? -ne 0 ]; then
-    echo "❌ Database initialization failed!"
-    echo "Trying alternative initialization method..."
+# Check if we're using PostgreSQL and run appropriate setup
+if [[ $DATABASE_URL == postgresql://* ]] || [[ $DATABASE_URL == postgres://* ]]; then
+    echo "PostgreSQL database detected - running PostgreSQL setup..."
+    python setup_postgresql.py
     
-    # Fallback: run initialization directly with proper Python path
-    cd /app && python -c "
+    if [ $? -ne 0 ]; then
+        echo "❌ PostgreSQL setup failed!"
+        exit 1
+    fi
+else
+    echo "Non-PostgreSQL database detected - running standard initialization..."
+    
+    # Initialize database with default admin user
+    echo "Initializing database and creating admin user..."
+    python src/scripts/init_railway_db.py
+
+    if [ $? -ne 0 ]; then
+        echo "❌ Database initialization failed!"
+        echo "Trying alternative initialization method..."
+        
+        # Fallback: run initialization directly with proper Python path
+        cd /app && python -c "
 import sys
 sys.path.insert(0, '/app')
 from src.models import init_db, get_db_session, User
@@ -44,10 +56,11 @@ with get_db_session() as session:
 
 print('Database initialization completed successfully!')
 "
-    
-    if [ $? -ne 0 ]; then
-        echo "❌ All database initialization methods failed!"
-        exit 1
+        
+        if [ $? -ne 0 ]; then
+            echo "❌ All database initialization methods failed!"
+            exit 1
+        fi
     fi
 fi
 
