@@ -445,10 +445,10 @@ def create_app():
             form.image_id.choices = [(img.id, f"{img.id}: {img.description[:50]}...") for img in images]
         
         if form.validate_on_submit():
-            if not app.scheduler:
-                app.scheduler = RandomScheduler()
+            # Ensure the scheduler instance is created, which initializes the notification service
+            scheduler_instance = RandomScheduler()
             
-            success, message = app.scheduler.send_test_message(form.image_id.data)
+            success, message = scheduler_instance.send_test_message(form.image_id.data)
             
             if success:
                 flash(message, 'success')

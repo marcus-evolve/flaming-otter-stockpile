@@ -28,14 +28,20 @@ class Config:
         load_dotenv()
         
         # Twilio Configuration
-        self.TWILIO_ACCOUNT_SID = self._get_required_env("TWILIO_ACCOUNT_SID")
-        self.TWILIO_AUTH_TOKEN = self._get_required_env("TWILIO_AUTH_TOKEN")
-        self.TWILIO_PHONE_NUMBER = self._validate_phone_number(
-            self._get_required_env("TWILIO_PHONE_NUMBER")
-        )
-        self.RECIPIENT_PHONE_NUMBER = self._validate_phone_number(
-            self._get_required_env("RECIPIENT_PHONE_NUMBER")
-        )
+        self.TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
+        self.TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
+        self.TWILIO_PHONE_NUMBER = os.environ.get("TWILIO_PHONE_NUMBER")
+        self.RECIPIENT_PHONE_NUMBER = os.environ.get("RECIPIENT_PHONE_NUMBER")
+
+        # Pushbullet Configuration
+        self.PUSHBULLET_API_KEY = os.environ.get("PUSHBULLET_API_KEY")
+
+        # Notification Service Selection
+        self.NOTIFICATION_SERVICE = os.environ.get("NOTIFICATION_SERVICE", "twilio").lower()
+
+        # Application Configuration
+        self.BASE_URL = os.environ.get("BASE_URL")
+        self.MIN_INTERVAL_HOURS = int(os.environ.get("MIN_INTERVAL_HOURS", 24))
         
         # Database Configuration
         self.DATABASE_URL = self._validate_database_url(
@@ -49,9 +55,6 @@ class Config:
         )
         
         # Scheduling Configuration
-        self.MIN_INTERVAL_HOURS = self._validate_positive_int(
-            self._get_env("MIN_INTERVAL_HOURS", "24"), "MIN_INTERVAL_HOURS"
-        )
         self.MAX_INTERVAL_HOURS = self._validate_positive_int(
             self._get_env("MAX_INTERVAL_HOURS", "90"), "MAX_INTERVAL_HOURS"
         )
@@ -90,7 +93,7 @@ class Config:
         
         # Create necessary directories
         self._create_directories()
-    
+
     @staticmethod
     def _get_env(key: str, default: Optional[str] = None) -> str:
         """Get environment variable with optional default."""
@@ -218,6 +221,29 @@ class Config:
     def is_development(self) -> bool:
         """Check if running in development environment."""
         return self.ENVIRONMENT == 'development'
+
+    def validate(self):
+        """Validate that essential configurations are set."""
+        required_vars = ["SECRET_KEY"]
+        if self.NOTIFICATION_SERVICE == "twilio":
+            required_vars.extend([
+                "TWILIO_ACCOUNT_SID",
+                "TWILIO_AUTH_TOKEN",
+                "TWILIO_PHONE_NUMBER",
+                "RECIPIENT_PHONE_NUMBER",
+                "BASE_URL"
+            ])
+        elif self.NOTIFICATION_SERVICE == "pushbullet":
+            required_vars.append("PUSHBULLET_API_KEY")
+        else:
+            raise ValueError(
+                f"Invalid NOTIFICATION_SERVICE: {self.NOTIFICATION_SERVICE}. "
+                "Must be 'twilio' or 'pushbullet'."
+            )
+
+        missing_vars = [var for var in required_vars if not getattr(self, var)]
+        if missing_vars:
+            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 
 # Singleton instance
