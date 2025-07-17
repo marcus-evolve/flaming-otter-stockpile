@@ -9,12 +9,16 @@ import os
 from pathlib import Path
 
 # Add the project root to Python path
-project_root = Path(__file__).parent.parent
+project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
+
+# Change to the project directory to ensure relative imports work
+os.chdir(project_root)
 
 def init_railway_db():
     """Initialize database for Railway deployment."""
     try:
+        # Import using absolute paths from project root
         from src.models import init_db, get_db_session, User
         
         print("Initializing database...")

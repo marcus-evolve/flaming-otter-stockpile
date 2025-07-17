@@ -8,9 +8,16 @@ import sys
 import os
 from pathlib import Path
 
-# Add the project root to Python path  
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+# For Railway deployment, ensure we're in the right directory
+if '/app' in os.getcwd():
+    # We're on Railway, set up paths correctly
+    project_root = Path('/app')
+    os.chdir(project_root)
+    sys.path.insert(0, str(project_root))
+else:
+    # Local development
+    project_root = Path(__file__).parent
+    sys.path.insert(0, str(project_root))
 
 def create_admin_user():
     """Create the admin user manually."""
