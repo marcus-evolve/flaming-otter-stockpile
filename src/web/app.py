@@ -18,6 +18,7 @@ from flask_login import (
     LoginManager, login_user, logout_user, login_required, 
     current_user
 )
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.utils import secure_filename
 
 from ..utils.config import config
@@ -46,6 +47,9 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = config.MAX_IMAGE_SIZE_BYTES
     app.config['UPLOAD_FOLDER'] = str(config.IMAGES_DIR)
     
+    # Initialize CSRF protection
+    csrf = CSRFProtect(app)
+    
     # Security headers
     @app.after_request
     def set_security_headers(response):
@@ -69,7 +73,11 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         with get_db_session() as session:
-            return session.query(User).get(int(user_id))
+            user = session.query(User).get(int(user_id))
+            if user:
+                # Expunge the user from the session to prevent DetachedInstanceError
+                session.expunge(user)
+            return user
     
     # Initialize database
     init_db()
@@ -328,7 +336,7 @@ def create_app():
         return redirect(url_for('images'))
     
     @app.route('/images/<int:image_id>/thumbnail')
-    @login_required
+    @csrf.exempt
     def image_thumbnail(image_id):
         """Serve image thumbnail."""
         with get_db_session() as session:
@@ -343,6 +351,42 @@ def create_app():
                 image.filename,
                 mimetype=image.mime_type
             )
+    
+    @app.route('/images/<int:image_id>/<filename>')
+    def image_by_filename(image_id, filename):
+        """Serve image by ID and filename (for Twilio media URLs)."""
+        # Log the incoming request
+        logger.info(f"Image request: id={image_id}, filename={filename}, headers={dict(request.headers)}")
+        
+        with get_db_session() as session:
+            image = session.query(Image).get(image_id)
+            if not image:
+                logger.error(f"Image {image_id} not found")
+                abort(404)
+            
+            # Verify filename matches (security check)
+            if image.filename != filename:
+                logger.error(f"Filename mismatch: expected {image.filename}, got {filename}")
+                abort(404)
+            
+            # Check if file exists
+            file_path = config.IMAGES_DIR / image.filename
+            if not file_path.exists():
+                logger.error(f"Image file not found: {file_path}")
+                abort(404)
+            
+            # Add headers to bypass ngrok restrictions
+            response = send_from_directory(
+                config.IMAGES_DIR,
+                image.filename,
+                mimetype=image.mime_type
+            )
+            
+            # Add cache control headers
+            response.headers['Cache-Control'] = 'public, max-age=3600'
+            
+            logger.info(f"Serving image: {image.filename} with mimetype: {image.mime_type}")
+            return response
     
     @app.route('/scheduler', methods=['GET', 'POST'])
     @login_required

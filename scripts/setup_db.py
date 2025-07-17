@@ -13,6 +13,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from src.utils.config import config
 from src.utils.logger import logger
 from src.models import init_db, Base, get_db_session, Image, User
+from sqlalchemy import inspect
 
 
 class DatabaseSetup:
@@ -53,7 +54,7 @@ class DatabaseSetup:
         """Verify database structure."""
         with get_db_session() as session:
             # Get table info
-            inspector = session.bind.inspector
+            inspector = inspect(session.bind)
             
             # Check if images table exists
             if 'images' not in inspector.get_table_names():
@@ -80,7 +81,7 @@ class DatabaseSetup:
         """Verify indexes are created."""
         with get_db_session() as session:
             # Get index info
-            inspector = session.bind.inspector
+            inspector = inspect(session.bind)
             indexes = inspector.get_indexes('images')
             
             logger.info(f"Found {len(indexes)} indexes on images table")

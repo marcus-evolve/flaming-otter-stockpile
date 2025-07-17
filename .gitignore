@@ -97,4 +97,11 @@ config/secrets.json
 
 # Image uploads (we'll store these in a dedicated folder)
 uploads/
-temp/ 
+temp/
+
+# Application data
+data/
+!data/.gitkeep
+
+# Railway files
+railway-env-example.txt 

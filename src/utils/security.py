@@ -10,7 +10,7 @@ import secrets
 from pathlib import Path
 from typing import Optional, Tuple
 from PIL import Image
-import magic
+import filetype
 
 from .config import config
 from .logger import security_logger
@@ -67,23 +67,18 @@ def validate_image_file(file_path: Path, max_size_bytes: Optional[int] = None) -
         if max_size_bytes and file_size > max_size_bytes:
             return False, f"File size exceeds maximum allowed ({max_size_bytes} bytes)"
         
-        # Verify file type using python-magic
-        mime = magic.Magic(mime=True)
-        file_mime = mime.from_file(str(file_path))
+        # Verify file type using filetype library
+        kind = filetype.guess(str(file_path))
         
-        allowed_mimes = [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp'
-        ]
+        allowed_types = ['jpg', 'jpeg', 'png', 'gif', 'webp']
         
-        if file_mime not in allowed_mimes:
+        if not kind or kind.extension not in allowed_types:
+            detected_type = kind.extension if kind else "unknown"
             security_logger.log_security_event(
                 "invalid_file_type",
-                {"mime_type": file_mime, "file": str(file_path)}
+                {"detected_type": detected_type, "file": str(file_path)}
             )
-            return False, f"Invalid file type: {file_mime}"
+            return False, f"Invalid file type: {detected_type}"
         
         # Verify using PIL as additional check
         try:

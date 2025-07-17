@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Ricky{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>Application Settings
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Twilio Configuration -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2">Twilio Configuration</h5>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.twilio_account_sid.label(class="form-label") }}
+                            {{ form.twilio_account_sid(class="form-control") }}
+                            <div class="form-text">Your Twilio Account SID</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.twilio_auth_token.label(class="form-label") }}
+                            {{ form.twilio_auth_token(class="form-control", type="password") }}
+                            <div class="form-text">Your Twilio Auth Token</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.twilio_phone_number.label(class="form-label") }}
+                            {{ form.twilio_phone_number(class="form-control") }}
+                            <div class="form-text">Format: +1234567890</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.recipient_phone_number.label(class="form-label") }}
+                            {{ form.recipient_phone_number(class="form-control") }}
+                            <div class="form-text">Phone number to send messages to</div>
+                        </div>
+                    </div>
+
+                    <!-- Scheduling Configuration -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2">Scheduling Configuration</h5>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.min_interval_hours.label(class="form-label") }}
+                            {{ form.min_interval_hours(class="form-control") }}
+                            <div class="form-text">Minimum hours between messages</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.max_interval_hours.label(class="form-label") }}
+                            {{ form.max_interval_hours(class="form-control") }}
+                            <div class="form-text">Maximum hours between messages</div>
+                        </div>
+                    </div>
+
+                    <!-- Image Configuration -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2">Image Configuration</h5>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.max_image_size_mb.label(class="form-label") }}
+                            {{ form.max_image_size_mb(class="form-control") }}
+                            <div class="form-text">Maximum image size in MB</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.auto_cycle_images.label(class="form-check-label") }}
+                            <div class="form-check">
+                                {{ form.auto_cycle_images(class="form-check-input") }}
+                                <div class="form-text">Reset all images when all have been sent</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Settings
+                        </button>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- System Information -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>System Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <strong>Database:</strong><br>
+                        <span class="text-muted">{{ config.DATABASE_URL.split('://')[0] }}</span>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <strong>Images Directory:</strong><br>
+                        <span class="text-muted">{{ config.IMAGES_DIR }}</span>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <strong>Logs Directory:</strong><br>
+                        <span class="text-muted">{{ config.LOGS_DIR }}</span>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <strong>Environment:</strong><br>
+                        <span class="badge bg-{% if config.DEBUG %}warning{% else %}success{% endif %}">
+                            {% if config.DEBUG %}Development{% else %}Production{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Test -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-vial me-2"></i>Configuration Test
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Test your Twilio configuration</p>
+                <a href="{{ url_for('test_message') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-paper-plane me-2"></i>Test Message
+                </a>
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="card mt-3 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Danger Zone
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    Destructive actions that cannot be undone.
+                </p>
+                <button type="button" class="btn btn-outline-danger btn-sm" 
+                        onclick="if(confirm('Are you sure you want to reset all image send status? This cannot be undone.')) { alert('Feature not implemented yet'); }">
+                    <i class="fas fa-undo me-2"></i>Reset All Images
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

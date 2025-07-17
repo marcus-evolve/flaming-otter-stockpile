@@ -3,11 +3,14 @@ Twilio service for sending SMS/MMS messages with security and reliability featur
 """
 
 import time
+import base64
+import json
 from pathlib import Path
 from typing import Optional, Tuple
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioException
 import requests
+import os
 
 from ..utils.config import config
 from ..utils.logger import logger, security_logger
@@ -68,7 +71,7 @@ class TwilioService:
             secure_image_path = secure_path_join(config.IMAGES_DIR, image_path.name)
             
             # Upload image to temporary hosting (in production, use a CDN)
-            media_url = self._get_media_url(secure_image_path)
+            media_url = self._get_media_url(image_id, image_path.name)
             if not media_url:
                 return False, "Failed to prepare media URL"
             
@@ -132,7 +135,7 @@ class TwilioService:
             security_logger.log_error(e, f"send_image_message for image {image_id}")
             return False, f"Unexpected error: {str(e)}"
     
-    def _get_media_url(self, image_path: Path) -> Optional[str]:
+    def _get_media_url(self, image_id: int, filename: str) -> Optional[str]:
         """
         Get publicly accessible URL for the image.
         
@@ -140,28 +143,19 @@ class TwilioService:
         For development, we'll use a placeholder approach.
         
         Args:
-            image_path: Path to the image file
+            image_id: The database ID of the image
+            filename: The filename of the image, for URL formatting
         
         Returns:
             Public URL or None if failed
         """
-        # TODO: In production, implement proper media hosting
-        # Options:
-        # 1. Upload to AWS S3 with presigned URLs
-        # 2. Use Cloudinary or similar service
-        # 3. Use Twilio's media storage
+        # Get base URL from environment or use ngrok for local development
+        base_url = os.environ.get('BASE_URL', 'https://2119dbe613bd.ngrok-free.app')
         
-        # For now, return a placeholder
-        # This would need to be replaced with actual implementation
-        logger.warning("Using placeholder media URL - implement proper hosting")
-        
-        # Verify file exists
-        if not image_path.exists():
-            return None
-        
-        # In production, upload file and return URL
-        # For development, you could use ngrok or similar
-        return f"https://placeholder.url/image/{image_path.name}"
+        # Generate the full image URL
+        image_url = f"{base_url}/images/{image_id}/{filename}"
+        logger.info(f"Generated media URL: {image_url}")
+        return image_url
     
     def _is_retryable_error(self, error: TwilioException) -> bool:
         """
